@@ -2,4 +2,5 @@
 
 !.gitignore
 !README.md
+!Makefile
 !manifest.yaml
