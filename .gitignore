@@ -3,4 +3,6 @@
 !.gitignore
 !README.md
 !Makefile
-!manifest.yaml
+!cluster.yaml
+!cluster.yaml.d
+!cluster.yaml.d/*.yaml
