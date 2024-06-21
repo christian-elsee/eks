@@ -3,6 +3,7 @@
 !.gitignore
 !README.md
 !Makefile
-!cluster.yaml
-!cluster.yaml.d
-!cluster.yaml.d/*.yaml
+!base.yaml
+!overlays
+!overlays/*.yaml
+!assets
