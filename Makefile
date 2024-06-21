@@ -22,20 +22,23 @@ dist:
 	tar -xf assets/eksctl_$(shell uname -s)_$(shell uname -m).tar.gz \
 		  -C  $@/bin
 
-
 build: OVERLAYS ?=
-build:
+build: base.yaml
 	: ## $@
-	cat ./base.yaml $(OVERLAYS) \
-		| yq --yaml-output -s add \
+	cat $< $(OVERLAYS) \
+		| yq --yaml-output --explicit-start -s add \
 		| tee dist/cluster.yaml
+	{ eksctl create cluster \
+			--dry-run \
+			-f dist/cluster.yaml \
+		| tee /dev/fd/100 \
+		| sed -E 's/Assume[^:]*\:\s*//' \
+				>dist/plan.yaml \
+	;} 100>&1
 
-check: dist/cluster.yaml
+check: dist/plan.yaml
 	: ## $@
-	eksctl create cluster \
-		--dry-run \
-		-f $< \
-	| tee dist/plan.yaml
+	<$< yq --yaml-output --explicit-start -re .
 
 install: dist/plan.yaml
 	: ## $@
