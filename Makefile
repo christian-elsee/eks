@@ -27,7 +27,11 @@ build: base.yaml
 	: ## $@
 	cat $< $(OVERLAYS) \
 		| yq --yaml-output --explicit-start -s add \
-		| tee dist/cluster.yaml
+		| tee dist/cluster.yaml \
+		| md5sum \
+		| cut -f1 -d" " \
+		| tee dist/checksum
+
 	{ eksctl create cluster \
 			--dry-run \
 			-f dist/cluster.yaml \
@@ -47,25 +51,15 @@ install: dist/plan.yaml
 		--kubeconfig dist/config \
 		--write-kubeconfig=true
 
-assets/eksctl: assets/eksctl_Darwin_x86_64.tar.gz \
-               assets/eksctl_Linux_x86_64.tar.gz
-assets/eksctl:
+assets: assets.yaml
 	: ## $@
-	ls -lhat assets/eksctl*
+	mkdir -p $@
 
-assets/eksctl_Darwin_x86_64.tar.gz:
-	: ## $@
-	curl "https://github.com/eksctl-io/eksctl/releases/download/v0.183.0/eksctl_Darwin_amd64.tar.gz" \
-     -L \
-     -D/dev/stderr \
-		 -o $@
-assets/eksctl_Linux_x86_64.tar.gz:
-	: ## $@
-	curl "https://github.com/eksctl-io/eksctl/releases/download/v0.183.0/eksctl_Linux_amd64.tar.gz" \
-     -L \
-     -D/dev/stderr \
-		 -o $@
-
-
-
-
+	<$< yq -re -re 'to_entries[] | "\(.key) \(.value)"' \
+		| grep -Ei -- $(shell uname -s) \
+		| xargs -rt -n2 -- sh -c '\
+			curl "$$2" \
+				-s \
+		    -L \
+		    -D/dev/stderr \
+				-o $$1' _

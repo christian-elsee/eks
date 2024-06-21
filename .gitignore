@@ -6,4 +6,4 @@
 !base.yaml
 !overlays
 !overlays/*.yaml
-!assets
+!assets.yaml
