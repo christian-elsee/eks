@@ -26,15 +26,23 @@ dist:
 build: OVERLAYS ?=
 build:
 	: ## $@
-	test "$${OVERLAYS}"
-
 	cat ./base.yaml $(OVERLAYS) \
 		| yq --yaml-output -s add \
 		| tee dist/cluster.yaml
 
-check:
+check: dist/cluster.yaml
 	: ## $@
+	eksctl create cluster \
+		--dry-run \
+		-f $< \
+	| tee dist/plan.yaml
 
+install: dist/plan.yaml
+	: ## $@
+	eksctl create cluster \
+		-f $< \
+		--kubeconfig dist/config \
+		--write-kubeconfig=true
 
 assets/eksctl: assets/eksctl_Darwin_x86_64.tar.gz \
                assets/eksctl_Linux_x86_64.tar.gz
