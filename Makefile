@@ -50,6 +50,24 @@ install: dist/plan.yaml
 		-f $< \
 		--kubeconfig dist/config \
 		--write-kubeconfig=true
+	eksctl get cluster -f $< -oyaml \
+		| tee dist/get-cluster.yaml 
+
+	# create a tarball and publish to artifacts
+	tar -cv \
+			-C dist \
+			-f dist/cluster.tar.$(shell cat dist/checksum) \
+			--exclude="bin" \
+			--exclude="cluster.tar.$(shell cat dist/checksum)" \
+		.	
+	cp dist/cluster.tar.$(shell cat dist/checksum) assets
+
+test: 
+	: ## $@
+
+clean: dist/plan.yaml
+	: ## $@
+	eksctl delete cluster -f $<
 
 assets: assets.yaml
 	: ## $@
@@ -63,3 +81,4 @@ assets: assets.yaml
 		    -L \
 		    -D/dev/stderr \
 				-o $$1' _
+
