@@ -6,6 +6,7 @@ An EKS orchestration workflow. Encapsulates [eksctl](https://eksctl.io) tool, wh
 - [Setup](#setup)
 - [Usage](#usage)
 - [Testing](#testing)
+- [KUBECONFIG](#testing)
 - [License](#license)
 
 ## Requirements
@@ -151,6 +152,37 @@ ok
 All tests successful.
 Files=2, Tests=4, 22 wallclock secs ( 0.02 usr  0.02 sys +  0.24 cusr  0.14 csys =  0.42 CPU)
 Result: PASS
+```
+
+## KUBECONFIG
+
+An orchestrated eks cluster config is written to `dist/kubeconfig` and is published as an artifact to `assets/cluster.tar.$checksum`. If [smoke tests](#testing) succeed, then kubeconfig is valid.
+
+The config file can be moved as is to your [KUBECONFIG](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) path. Additionally, you can merge with existing cluster configuration, as a new context.
+
+1\. Review contexts defined in existing default cluster configuration
+```sh
+$ <~/.kube/config  yq -re '.contexts | map(.name)[]'
+default
+
+```
+
+2\. Review context defined in EKS cluster configuration
+```sh
+$ <dist/kubeconfig  yq -re '.contexts | map(.name)[]'
+cli@secrets-stack.eu-north-1.eksctl.io
+```
+
+3\. Merge contexts into a single configuration
+```sh
+$ KUBECONFIG=dist/kubeconfig:$HOME/.kube/config kubectl config view \
+  --flatten \
+| kubectl --kubeconfig /dev/stdin config get-contexts
+CURRENT   NAME                                     CLUSTER                              AUTHINFO                                 NAMESPACE
+*         cli@secrets-stack.eu-north-1.eksctl.io   secrets-stack.eu-north-1.eksctl.io   cli@secrets-stack.eu-north-1.eksctl.io
+          default                                  default                              default
+~/Develop/github.com/christian-elsee/eks
+
 ```
 
 ## License
