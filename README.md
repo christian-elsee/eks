@@ -1,6 +1,6 @@
 # eks
 
-An EKS cloudformation manifest and orchestration workflow.
+An EKS orchestration workflow. Encapsulates [eksctl](https://eksctl.io) tool, which is used [drive configuration](https://eksctl.io/usage/schema/) and [deployment](https://eksctl.io/usage/creating-and-managing-clusters/).
 
 - [Requirements](#requirements)
 - [Setup](#setup)
