@@ -3,3 +3,4 @@ assets/eksctl_Darwin_x86_64.tar.gz: https://github.com/eksctl-io/eksctl/releases
 assets/eksctl_Linux_x86_64.tar.gz: https://github.com/eksctl-io/eksctl/releases/download/v0.183.0/eksctl_Linux_amd64.tar.gz
 assets/aws-iam-authenticator_Darwin_x86_64: https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.21/aws-iam-authenticator_0.5.21_darwin_amd64
 assets/aws-iam-authenticator_Linux_x86_64: https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.21/aws-iam-authenticator_0.5.21_linux_amd64
+src/tap.sh: https://raw.githubusercontent.com/dnmfarrell/tap.sh/3f6f6d5df48e2c1f39bf7b9b0572d0a230e5e0eb/tap.sh

@@ -2,6 +2,7 @@
 .SHELLFLAGS := -euo pipefail $(if $(TRACE),-x,) -c
 .ONESHELL:
 .DELETE_ON_ERROR:
+.PHONY: assets
 
 ## env ##########################################
 export NAME := $(shell basename $(PWD))
@@ -19,8 +20,11 @@ distclean:
 dist:
 	: ## $@
 	mkdir -p $@ $@/bin
+
+	cp assets/tap.sh $@
 	tar -xf assets/eksctl_$(shell uname -s)_$(shell uname -m).tar.gz \
 		  -C  $@/bin
+
 
 build: OVERLAYS ?=
 build: base.yaml
@@ -48,8 +52,10 @@ install: dist/plan.yaml
 	: ## $@
 	eksctl create cluster \
 		-f $< \
-		--kubeconfig dist/config \
-		--write-kubeconfig=true
+	||:
+	eksctl utils write-kubeconfig \
+		-f dist/plan.yaml	\
+		--kubeconfig dist/kubeconfig
 	eksctl get cluster -f $< -oyaml \
 		| tee dist/get-cluster.yaml 
 
@@ -64,6 +70,7 @@ install: dist/plan.yaml
 
 test: 
 	: ## $@
+	prove -v
 
 clean: dist/plan.yaml
 	: ## $@
@@ -73,12 +80,21 @@ assets: assets.yaml
 	: ## $@
 	mkdir -p $@
 
-	<$< yq -re -re 'to_entries[] | "\(.key) \(.value)"' \
-		| grep -Ei -- $(shell uname -s) \
-		| xargs -rt -n2 -- sh -c '\
+	# iterate assets.yaml and install any missing assets
+	<$< yq  -re 'to_entries[] | "\(.key) \(.value)"' \
+		| xargs -rn2 -- sh -c 'test -f $$1 || echo $$1 $$2' _ \
+		| xargs -rn2 -- sh -c '
+			dirname $$1 | xargs mkdir -vp
 			curl "$$2" \
 				-s \
 		    -L \
 		    -D/dev/stderr \
 				-o $$1' _
+
+	# sanity check assets correctly installed
+	<$< yq -re 'keys[]' \
+		| xargs -I% -- sh -xc \
+			'test -f % && stat %
+			' _
+
 

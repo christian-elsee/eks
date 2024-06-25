@@ -7,3 +7,5 @@
 !overlays
 !overlays/*.yaml
 !assets.yaml
+!t
+!t/*.t
